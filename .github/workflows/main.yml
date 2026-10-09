@@ -1,52 +1,50 @@
 name: Generar APK Control Raleo
 
 on:
-workflow_dispatch:
-push:
-branches:
-- main
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-build:
-runs-on: ubuntu-latest
-steps:
-- name: Descargar proyecto
-uses: actions/checkout@v4
+  build:
+    runs-on: ubuntu-latest
 
-```
-  - name: Instalar Java
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: '17'
+    steps:
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
 
-  - name: Instalar Node.js
-    uses: actions/setup-node@v4
-    with:
-      node-version: '20'
+      - name: Instalar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-  - name: Instalar dependencias
-    run: npm install
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-  - name: Compilar web
-    run: npm run build
+      - name: Instalar dependencias web
+        run: npm install
 
-  - name: Preparar Android
-    run: |
-      npm install @capacitor/core @capacitor/cli @capacitor/android
-      npx cap init "Control Raleo" "com.controlraleo.app" --web-dir=dist
-      npx cap add android
-      npx cap sync android
+      - name: Compilar aplicación web
+        run: npm run build
 
-  - name: Compilar APK
-    run: |
-      cd android
-      chmod +x gradlew
-      ./gradlew assembleDebug
+      - name: Instalar Cordova
+        run: npm install --global cordova@12
 
-  - name: Guardar APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: Control-Raleo-APK
-      path: android/app/build/outputs/apk/debug/app-debug.apk
-```
+      - name: Preparar aplicación Cordova
+        run: |
+          mkdir -p www
+          cp -R dist/. www/
+          cordova platform add android@13
+
+      - name: Compilar APK Android
+        run: cordova build android --debug
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Control-Raleo-APK
+          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
