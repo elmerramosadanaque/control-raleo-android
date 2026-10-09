@@ -9,12 +9,11 @@ branches:
 jobs:
 build:
 runs-on: ubuntu-latest
+steps:
+- name: Descargar proyecto
+uses: actions/checkout@v4
 
 ```
-steps:
-  - name: Descargar proyecto
-    uses: actions/checkout@v4
-
   - name: Instalar Java
     uses: actions/setup-java@v4
     with:
