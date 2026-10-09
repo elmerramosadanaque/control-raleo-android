@@ -3,17 +3,17 @@ name: Generar APK Control Raleo
 on:
 workflow_dispatch:
 push:
-branches: [main]
+branches:
+- main
 
 jobs:
 build:
 runs-on: ubuntu-latest
+steps:
+- name: Descargar proyecto
+uses: actions/checkout@v4
 
 ```
-steps:
-  - name: Descargar proyecto
-    uses: actions/checkout@v4
-
   - name: Instalar Java
     uses: actions/setup-java@v4
     with:
@@ -24,15 +24,14 @@ steps:
     uses: actions/setup-node@v4
     with:
       node-version: '20'
-      cache: npm
 
   - name: Instalar dependencias
     run: npm install
 
-  - name: Preparar proyecto web
+  - name: Compilar web
     run: npm run build
 
-  - name: Instalar herramientas Android
+  - name: Preparar Android
     run: |
       npm install @capacitor/core @capacitor/cli @capacitor/android
       npx cap init "Control Raleo" "com.controlraleo.app" --web-dir=dist
