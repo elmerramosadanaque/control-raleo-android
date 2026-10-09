@@ -1,57 +1,57 @@
+
 name: Generar APK Control Raleo
 
-on:
-workflow_dispatch:
-push:
-branches:
-- main
+'on':
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Descargar proyecto
+        uses: actions/checkout@v5
 
-steps:
-  - name: Descargar proyecto
-    uses: actions/checkout@v5
+      - name: Instalar Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
 
-  - name: Instalar Java
-    uses: actions/setup-java@v5
-    with:
-      distribution: temurin
-      java-version: '17'
+      - name: Instalar Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
 
-  - name: Instalar Node.js
-    uses: actions/setup-node@v5
-    with:
-      node-version: '20'
+      - name: Instalar dependencias web
+        run: npm install
 
-  - name: Instalar dependencias web
-    run: npm install
+      - name: Compilar aplicación web
+        run: npm run build
 
-  - name: Compilar aplicación web
-    run: npm run build
+      - name: Instalar Cordova
+        run: npm install --global cordova@12
 
-  - name: Instalar Cordova
-    run: npm install --global cordova@12
+      - name: Crear proyecto Android independiente
+        run: |
+          cordova create cordova-app com.agriproserla.controlraleo "Control Raleo"
+          cp config.xml cordova-app/config.xml
+          rm -rf cordova-app/www/*
+          cp -R dist/. cordova-app/www/
 
-  - name: Crear proyecto Android independiente
-    run: |
-      cordova create cordova-app com.agriproserla.controlraleo "Control Raleo"
-      cp config.xml cordova-app/config.xml
-      rm -rf cordova-app/www/*
-      cp -R dist/. cordova-app/www/
+      - name: Instalar plataforma Android
+        working-directory: cordova-app
+        run: cordova platform add android@13
 
-  - name: Instalar plataforma Android
-    working-directory: cordova-app
-    run: cordova platform add android@13
+      - name: Compilar APK
+        working-directory: cordova-app
+        run: cordova build android --debug
 
-  - name: Compilar APK
-    working-directory: cordova-app
-    run: cordova build android --debug
-
-  - name: Guardar APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: Control-Raleo-APK
-      path: cordova-app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Control-Raleo-APK
+          path: cordova-app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
